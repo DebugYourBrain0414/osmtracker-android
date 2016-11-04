@@ -130,7 +130,7 @@ public class SensorListener implements SensorEventListener {
 		} else {
 			// case for orientation event: already done
 		}
-		Log.v(TAG,"new azimuth:  "+azimuth+", pitch: "+pitch+", roll: "+roll+", accuracy: "+accuracy+", valid: "+valid);			
+		//Log.v(TAG,"new azimuth:  "+azimuth+", pitch: "+pitch+", roll: "+roll+", accuracy: "+accuracy+", valid: "+valid);
 		
 		if (activity!=null) {
 			TextView tvHeading = (TextView) activity.findViewById(R.id.gpsstatus_record_tvHeading);

