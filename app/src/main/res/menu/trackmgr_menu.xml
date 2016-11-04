@@ -4,10 +4,6 @@
 		android:title="@string/menu_newtrack"
 		android:icon="@android:drawable/ic_menu_add"
 		android:showAsAction="ifRoom|withText"></item>
-	<item android:id="@+id/trackmgr_menu_sendsms"
-		android:title="@string/menu_sendsms"
-		android:icon="@android:drawable/ic_menu_send"
-		android:showAsAction="never"></item>
 	<item android:id="@+id/trackmgr_menu_continuetrack"
 		android:title="@string/menu_continue"
 		android:icon="@android:drawable/ic_menu_edit"

