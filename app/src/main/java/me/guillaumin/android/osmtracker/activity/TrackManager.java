@@ -521,10 +521,6 @@ public class TrackManager extends ListActivity {
 			if (hiddenReceiver != null) {
 				IntentFilter iFilter = new IntentFilter();
 				iFilter.addAction(OSMTracker.INTENT_TRACK_WP);
-				iFilter.addAction(OSMTracker.INTENT_UPDATE_WP);
-				iFilter.addAction(OSMTracker.INTENT_DELETE_WP);
-				iFilter.addAction(OSMTracker.INTENT_START_TRACKING);
-				iFilter.addAction(OSMTracker.INTENT_STOP_TRACKING);
 
 				// Register dynamically loaded receiver that sends current location whenever icons are clicked
 				registerReceiver(hiddenReceiver, iFilter);
